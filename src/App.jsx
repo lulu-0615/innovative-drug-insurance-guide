@@ -455,8 +455,8 @@ export default function App() {
 
       {/* Hero */}
       <section ref={heroRef} className="w-full px-0 pt-0">
-        <div className="grid min-h-[78vh] gap-0 md:grid-cols-2 md:items-stretch">
-          <div className="flex flex-col justify-center bg-hero-navy px-6 py-12 ring-1 ring-white/10 md:px-12">
+        <div className="grid gap-0 md:grid-cols-2 md:min-h-[78vh] md:items-stretch">
+          <div className="flex flex-col justify-center bg-hero-navy px-6 py-12 ring-1 ring-white/10 md:h-full md:px-12">
             <motion.h1
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -499,7 +499,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="relative overflow-hidden ring-1 ring-white/10">
+          <div className="relative overflow-hidden ring-1 ring-white/10 md:h-full">
             <img
               src="/assets/insurance_bg.jpg"
               alt="insurance background"
@@ -610,9 +610,9 @@ export default function App() {
 
       {/* Module 2 */}
       <Section id="drugs">
-        <div className="grid gap-8 md:grid-cols-2 md:items-center">
+        <div className="grid gap-6 md:grid-cols-2 md:items-stretch md:gap-0 md:min-h-[64vh]">
           <motion.div
-            className="order-1 overflow-hidden rounded-3xl ring-1 ring-white/10"
+            className="order-1 overflow-hidden rounded-3xl ring-1 ring-white/10 md:h-full md:rounded-r-none"
             initial={{ opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.35 }}
@@ -621,7 +621,7 @@ export default function App() {
             <img
               src="/assets/drugs_bg.jpg"
               alt="drugs background"
-              className="mask-fade-x aspect-video w-full object-cover"
+              className="mask-fade-x aspect-video h-full w-full object-cover md:aspect-auto"
               onError={(e) => {
                 // 兜底：你没放 jpg 时仍能看到背景
                 e.currentTarget.src = "/assets/drugs_bg.svg";
@@ -635,7 +635,7 @@ export default function App() {
             </div>
           </motion.div>
 
-          <div className="order-2">
+          <div className="order-2 flex h-full flex-col justify-center rounded-3xl bg-[#001A33] p-6 ring-1 ring-white/10 md:rounded-l-none md:p-10">
             <div className="text-xs font-semibold tracking-widest text-mint-breath/90">MODULE 2</div>
             <div className="mt-2 text-2xl font-bold md:text-3xl">创新药指南</div>
             <div className="mt-2 text-sm leading-relaxed text-white/65">
