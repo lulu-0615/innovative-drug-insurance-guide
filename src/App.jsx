@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import { AnimatePresence, motion, useInView } from "framer-motion";
 import { Activity, HeartPulse, ShieldCheck, Sparkles } from "lucide-react";
 import insuranceConfig from "../insurance_config.json";
 
@@ -52,6 +52,18 @@ function scrollToId(id) {
   const el = document.getElementById(id);
   if (!el) return;
   el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/**
+ * 打开 Module 1 并平滑滚动到锚点
+ * @param {Function} setVisible
+ * @returns {void}
+ */
+function openScienceModule(setVisible) {
+  setVisible(true);
+  window.setTimeout(() => {
+    scrollToId("science");
+  }, 30);
 }
 
 /**
@@ -184,22 +196,22 @@ function DrugSwiper({ tab }) {
       >
         {items.map((it) => (
           <div key={it.id} className="w-full shrink-0 snap-start pr-0">
-            <div className="glass-strong rounded-2xl border border-white/15 p-4 shadow-glass">
+            <div className="glass-strong rounded-2xl p-4 shadow-xl">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="text-[15px] font-semibold text-white">{it.title}</div>
+                  <div className="text-[15px] font-semibold text-slate-900">{it.title}</div>
                 </div>
                 {it.right && isLikelyValidity(it.right) ? (
-                  <div className="text-xs text-white/60">{it.right}</div>
+                  <div className="text-xs text-slate-500">{it.right}</div>
                 ) : null}
               </div>
 
               {it.subtitle ? (
-                <div className="mt-2 text-xs leading-relaxed text-white/70">{it.subtitle}</div>
+                <div className="mt-2 text-xs leading-relaxed text-slate-600">{it.subtitle}</div>
               ) : null}
 
               {it.bullets?.length ? (
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-relaxed text-white/70">
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-relaxed text-slate-600">
                   {it.bullets.map((b, idx) => (
                     <li key={idx}>{b}</li>
                   ))}
@@ -207,8 +219,8 @@ function DrugSwiper({ tab }) {
               ) : null}
 
               {it.tips?.length ? (
-                <div className="mt-3 rounded-xl border border-white/10 bg-black/10 p-3 text-[11px] leading-relaxed text-white/65">
-                  <div className="mb-1 flex items-center gap-2 text-white/75">
+                <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-[11px] leading-relaxed text-slate-600">
+                  <div className="mb-1 flex items-center gap-2 text-slate-700">
                     <Sparkles className="h-4 w-4 text-mint-breath" />
                     <span className="font-semibold">小贴士</span>
                   </div>
@@ -224,7 +236,7 @@ function DrugSwiper({ tab }) {
                 <div className="mt-3">
                   <button
                     type="button"
-                    className="rounded-xl border border-tech-blue/35 bg-tech-blue/15 px-3 py-2 text-xs font-semibold text-white hover:bg-tech-blue/25"
+                    className="rounded-xl border border-tech-blue/35 bg-tech-blue px-3 py-2 text-xs font-semibold text-white hover:bg-[#0066d6]"
                     onClick={() => {
                       if (it.link_kind === "copy") {
                         copyToClipboard(it.link || "");
@@ -251,7 +263,7 @@ function DrugSwiper({ tab }) {
               aria-label={`第 ${idx + 1} 个药物`}
               className={[
                 "h-2 rounded-full transition-all",
-                idx === active ? "w-6 bg-[#d4af37]" : "w-2 bg-white/25"
+                idx === active ? "w-6 bg-[#d4af37]" : "w-2 bg-slate-300"
               ].join(" ")}
               onClick={() => {
                 const el = trackRef.current;
@@ -310,7 +322,7 @@ function SegmentedTabs({ tabs }) {
     <div>
       <div
         ref={segRef}
-        className="hide-scrollbar relative flex max-w-full gap-5 overflow-x-auto rounded-full border border-white/15 bg-white/10 px-3 py-2"
+        className="hide-scrollbar relative flex max-w-full gap-5 overflow-x-auto rounded-full border border-slate-200 bg-white px-3 py-2 shadow-sm"
         onScroll={() => {
           const seg = segRef.current;
           const ind = indicatorRef.current;
@@ -332,7 +344,7 @@ function SegmentedTabs({ tabs }) {
             data-idx={idx}
             className={[
               "relative z-10 shrink-0 whitespace-nowrap px-2 py-1 text-xs font-semibold",
-              idx === active ? "text-white" : "text-white/60 hover:text-white/80"
+              idx === active ? "text-tech-blue" : "text-slate-500 hover:text-slate-700"
             ].join(" ")}
             onClick={() => activate(idx)}
           >
@@ -352,41 +364,41 @@ function SegmentedTabs({ tabs }) {
 function InsuranceTool({ data }) {
   const modules = data?.modules || [];
   return (
-    <div className="mt-6 grid gap-4 md:grid-cols-3">
+    <div className="legacy-m1-cards mt-6">
       {modules.map((m) => (
-        <div key={m.id} className="rounded-3xl bg-card-border p-[1px] shadow-glow">
-          <div className="glass rounded-3xl p-5">
-            <div className="text-center text-lg font-semibold text-white">{m.title}</div>
+        <div key={m.id} className="legacy-m1-card">
+          <div className="legacy-m1-inner">
+            <div className="legacy-m1-title">{m.title}</div>
             {m.description ? (
-              <div className="mt-3 space-y-2">
+              <div className="legacy-m1-desc">
                 {parseL1Description(m.description).map((row, idx) => (
-                  <div key={idx} className="grid grid-cols-[56px,1fr] gap-3 text-xs leading-relaxed">
-                    <div className="font-semibold text-white/55">{row.label}</div>
-                    <div className="text-white/55">{row.value}</div>
+                  <div key={idx} className="legacy-m1-desc-row">
+                    <div className="legacy-m1-desc-label">{row.label}</div>
+                    <div className="legacy-m1-desc-value">{row.value}</div>
                   </div>
                 ))}
               </div>
             ) : null}
 
-            <div className="mt-4 space-y-3">
+            <div className="legacy-m1-accordion">
               {(m.accordion || []).map((acc) => (
                 <details
                   key={acc.id}
-                  className="rounded-2xl border border-tech-blue/20 bg-tech-blue/10 px-4 py-3"
+                  className="legacy-m1-acc2"
                 >
-                  <summary className="cursor-pointer list-none">
-                    <div className="flex items-start justify-between gap-3">
+                  <summary className="legacy-m1-acc2-summary">
+                    <div className="legacy-m1-acc2-left">
                       <div>
-                        <div className="text-sm font-semibold text-white">{acc.title}</div>
+                        <div className="legacy-m1-acc2-title">{acc.title}</div>
                         {acc.subtitle ? (
-                          <div className="mt-1 text-xs text-white/60">{acc.subtitle}</div>
+                          <div className="legacy-m1-acc2-subtitle">{acc.subtitle}</div>
                         ) : null}
                       </div>
-                      <div className="mt-1 text-xs text-white/60">展开</div>
                     </div>
+                    <div className="legacy-m1-acc2-hint">展开</div>
                   </summary>
                   {acc.tabs?.length ? (
-                    <div className="mt-4">
+                    <div className="legacy-m1-acc2-body">
                       <SegmentedTabs tabs={acc.tabs} />
                     </div>
                   ) : null}
@@ -405,7 +417,7 @@ function InsuranceTool({ data }) {
  */
 function Section({ children, id }) {
   return (
-    <section id={id} className="mx-auto w-full max-w-6xl px-5 py-16 md:px-8">
+    <section id={id} className="mx-auto w-full max-w-7xl px-5 py-14 md:px-8">
       {children}
     </section>
   );
@@ -414,7 +426,7 @@ function Section({ children, id }) {
 export default function App() {
   /** @type {InsuranceConfigRoot} */
   const data = insuranceConfig;
-  const [showTool, setShowTool] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   const nav = useMemo(
     () => [
@@ -428,10 +440,10 @@ export default function App() {
   const heroInView = useInView(heroRef, { margin: "-20% 0px -20% 0px" });
 
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen text-slate-900">
       {/* Header */}
-      <div className="sticky top-0 z-50 border-b border-white/10 bg-white/5 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-8">
+      <div className="sticky top-0 z-50 border-b border-slate-200 bg-white/70 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-4 md:px-8">
           <div className="flex items-center gap-3">
             <div className="grid h-9 w-9 place-items-center rounded-xl bg-tech-blue/20 ring-1 ring-tech-blue/35">
               <HeartPulse className="h-5 w-5 text-mint-breath" />
@@ -443,7 +455,7 @@ export default function App() {
               <button
                 key={x.id}
                 type="button"
-                className="text-white/70 hover:text-white"
+                className="text-slate-600 hover:text-slate-900"
                 onClick={() => scrollToId(x.id)}
               >
                 {x.label}
@@ -454,9 +466,9 @@ export default function App() {
       </div>
 
       {/* Hero */}
-      <section ref={heroRef} className="w-full px-0 pt-0">
-        <div className="grid gap-0 md:grid-cols-2 md:min-h-[78vh] md:items-stretch">
-          <div className="flex flex-col justify-center bg-hero-navy px-6 py-12 ring-1 ring-white/10 md:h-full md:px-12">
+      <section ref={heroRef} className="mx-auto w-full max-w-7xl px-5 pt-6 md:px-8">
+        <div className="grid overflow-hidden rounded-3xl shadow-xl md:grid-cols-2 md:min-h-[70vh] md:items-stretch">
+          <div className="flex flex-col justify-center bg-gradient-to-br from-[#002347] to-[#004080] px-6 py-12 md:h-full md:px-12">
             <motion.h1
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -471,22 +483,22 @@ export default function App() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.08 }}
-              className="mt-4 max-w-lg text-sm leading-relaxed text-white/65 md:text-base"
+              className="mt-4 max-w-lg text-sm leading-relaxed text-white/70 md:text-base"
             >
-              以医疗科技风的交互方式，帮助患者与家属快速理解保障层级与创新药信息入口。
+              深入了解多层次保障体系与创新药使用指南，让每一份保障更有温度。
             </motion.p>
 
             <div className="mt-7 flex flex-wrap gap-3">
               <button
                 type="button"
-                className="rounded-xl bg-tech-blue px-5 py-3 text-sm font-semibold text-white shadow-glow hover:bg-tech-blue/90"
-                onClick={() => scrollToId("science")}
+                className="rounded-xl bg-tech-blue px-5 py-3 text-sm font-semibold text-white hover:bg-[#0066d6]"
+                onClick={() => openScienceModule(setIsVisible)}
               >
-                立即开始
+                了解多层次保障
               </button>
               <button
                 type="button"
-                className="rounded-xl border border-white/18 bg-white/0 px-5 py-3 text-sm font-semibold text-white/85 transition hover:bg-white/10"
+                className="rounded-xl border border-white/30 bg-white/0 px-5 py-3 text-sm font-semibold text-white/90 transition hover:bg-white/20"
                 onClick={() => scrollToId("drugs")}
               >
                 查看创新药指南
@@ -499,7 +511,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="relative overflow-hidden ring-1 ring-white/10 md:h-full">
+          <div className="relative overflow-hidden md:h-full">
             <img
               src="/assets/insurance_bg.jpg"
               alt="insurance background"
@@ -524,93 +536,98 @@ export default function App() {
       <Section id="science">
         <div className="flex items-end justify-between gap-6">
           <div>
-            <div className="text-xs font-semibold tracking-widest text-mint-breath/90">MODULE 1</div>
-            <div className="mt-2 text-2xl font-bold md:text-3xl">保障科普</div>
-            <div className="mt-2 max-w-2xl text-sm text-white/65">
+            <div className="mt-2 text-2xl font-bold text-[#007AFF] md:text-3xl">多层次保障科普</div>
+            <div className="mt-2 max-w-2xl text-sm text-slate-500">
               初始仅展示 Slogan；点击后使用 Framer Motion 的 staggerChildren 横向弹出三张玻璃卡片。
             </div>
           </div>
-          <div className="hidden md:block text-xs text-white/55">
+          <div className="hidden md:block text-xs text-slate-400">
             {heroInView ? "首屏已进入视口" : "向上滚动查看首屏"}
           </div>
         </div>
 
         <div className="mt-8">
-          {!showTool ? (
+          {!isVisible ? (
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.4 }}
-              className="glass-strong rounded-3xl p-7 shadow-glow"
+              className="glass-strong rounded-3xl p-7 shadow-xl"
             >
               <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                   <div className="text-lg font-semibold">用结构化信息，降低理解门槛</div>
-                  <div className="mt-1 text-sm text-white/65">
+                  <div className="mt-1 text-sm text-slate-500">
                     从居民医保到惠民保与商业险，按层级展开查看目录、政策与入口。
                   </div>
                 </div>
                 <button
                   type="button"
-                  className="rounded-xl bg-tech-blue px-5 py-3 text-sm font-semibold text-white shadow-glow hover:bg-tech-blue/90"
-                  onClick={() => setShowTool(true)}
+                  className="rounded-xl bg-tech-blue px-5 py-3 text-sm font-semibold text-white hover:bg-[#0066d6]"
+                  onClick={() => openScienceModule(setIsVisible)}
                 >
-                  了解更多
+                  科普保障小工具
                 </button>
               </div>
             </motion.div>
           ) : (
-            <motion.div
-              initial="hidden"
-              animate="show"
-              variants={{
-                hidden: {},
-                show: { transition: { staggerChildren: 0.08 } }
-              }}
-            >
+            <AnimatePresence>
               <motion.div
-                variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
-                className="grid gap-4 md:grid-cols-3"
+                key="science-content"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
               >
-                {[
-                  { icon: ShieldCheck, title: "居民基本医保", desc: "基础保障 · 清单内报销" },
-                  { icon: Sparkles, title: "惠民保", desc: "低门槛 · 补充大额费用" },
-                  { icon: HeartPulse, title: "商业保险", desc: "更高保额 · 产品差异大" }
-                ].map((c, idx) => (
-                  <motion.div
-                    key={idx}
-                    variants={{ hidden: { opacity: 0, x: -18 }, show: { opacity: 1, x: 0 } }}
-                    className="rounded-3xl bg-card-border p-[1px]"
-                  >
-                    <div className="glass rounded-3xl p-5">
-                      <div className="flex items-center gap-3">
-                        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-tech-blue/20 ring-1 ring-tech-blue/35">
-                          <c.icon className="h-5 w-5 text-mint-breath" />
+                <motion.div
+                  initial="hidden"
+                  animate="show"
+                  variants={{
+                    hidden: {},
+                    show: { transition: { staggerChildren: 0.08 } }
+                  }}
+                  className="grid gap-4 md:grid-cols-3"
+                >
+                  {[
+                    { icon: ShieldCheck, title: "居民基本医保", desc: "基础保障 · 清单内报销" },
+                    { icon: Sparkles, title: "惠民保", desc: "低门槛 · 补充大额费用" },
+                    { icon: HeartPulse, title: "商业保险", desc: "更高保额 · 产品差异大" }
+                  ].map((c, idx) => (
+                    <motion.div
+                      key={idx}
+                      variants={{ hidden: { opacity: 0, x: -18 }, show: { opacity: 1, x: 0 } }}
+                      className="rounded-3xl bg-card-border p-[1px]"
+                    >
+                      <div className="glass rounded-3xl p-5 shadow-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-tech-blue/10 ring-1 ring-tech-blue/35">
+                            <c.icon className="h-5 w-5 text-[#007AFF]" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-semibold text-slate-900">{c.title}</div>
+                            <div className="text-xs text-slate-500">{c.desc}</div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="text-sm font-semibold">{c.title}</div>
-                          <div className="text-xs text-white/60">{c.desc}</div>
+                        <div className="mt-4 text-xs text-slate-500">
+                          下方将加载你的「多层次保障科普小工具」内容（JSON 驱动）。
                         </div>
                       </div>
-                      <div className="mt-4 text-xs text-white/60">
-                        下方将加载你的「多层次保障科普小工具」内容（JSON 驱动）。
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </motion.div>
+                    </motion.div>
+                  ))}
+                </motion.div>
 
-              <motion.div variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}>
-                <InsuranceTool data={data} />
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.12 }}>
+                  <InsuranceTool data={data} />
+                </motion.div>
               </motion.div>
-            </motion.div>
+            </AnimatePresence>
           )}
         </div>
       </Section>
 
       {/* Module 2 */}
       <Section id="drugs">
-        <div className="grid gap-6 md:grid-cols-2 md:items-stretch md:gap-0 md:min-h-[64vh]">
+        <div className="grid gap-6 md:grid-cols-2 md:items-stretch md:gap-0 md:min-h-[60vh]">
           <motion.div
             className="order-1 overflow-hidden rounded-3xl ring-1 ring-white/10 md:h-full md:rounded-r-none"
             initial={{ opacity: 0, y: 18 }}
@@ -635,16 +652,15 @@ export default function App() {
             </div>
           </motion.div>
 
-          <div className="order-2 flex h-full flex-col justify-center rounded-3xl bg-[#001A33] p-6 ring-1 ring-white/10 md:rounded-l-none md:p-10">
-            <div className="text-xs font-semibold tracking-widest text-mint-breath/90">MODULE 2</div>
-            <div className="mt-2 text-2xl font-bold md:text-3xl">创新药指南</div>
-            <div className="mt-2 text-sm leading-relaxed text-white/65">
+          <div className="order-2 flex h-full flex-col justify-center rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200 md:rounded-l-none md:p-10">
+            <div className="mt-2 text-2xl font-bold text-[#007AFF] md:text-3xl">创新药使用指南</div>
+            <div className="mt-2 text-sm leading-relaxed text-slate-500">
               反向对开布局（左图右文）。点击按钮跳转到外部工具页面。
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3">
               <a
-                className="rounded-xl bg-tech-blue px-5 py-3 text-sm font-semibold text-white shadow-glow hover:bg-tech-blue/90"
+                className="rounded-xl bg-tech-blue px-5 py-3 text-sm font-semibold text-white hover:bg-[#0066d6]"
                 href="http://idate.top/gft.html"
                 target="_blank"
                 rel="noreferrer noopener"
@@ -653,7 +669,7 @@ export default function App() {
               </a>
               <button
                 type="button"
-                className="rounded-xl border border-white/18 bg-white/0 px-5 py-3 text-sm font-semibold text-white/85 transition hover:bg-white/10"
+                className="rounded-xl border border-tech-blue/30 bg-white px-5 py-3 text-sm font-semibold text-[#007AFF] transition hover:bg-blue-50"
                 onClick={() => scrollToId("science")}
               >
                 返回保障科普
@@ -664,8 +680,8 @@ export default function App() {
       </Section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 bg-white/5">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-10 text-sm text-white/60 md:flex-row md:items-center md:justify-between md:px-8">
+      <footer className="border-t border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-10 text-sm text-slate-500 md:flex-row md:items-center md:justify-between md:px-8">
           <div>提示：本页面为科普工具，具体政策以当地医保与产品条款为准。</div>
           <div>© {new Date().getFullYear()} Roche. All rights reserved.</div>
         </div>
@@ -673,4 +689,5 @@ export default function App() {
     </div>
   );
 }
+
 
