@@ -12,8 +12,26 @@ body {
 body {
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
     "Apple Color Emoji", "Segoe UI Emoji";
-  background: #f8fafc;
+  background-color: #f8fafc;
+  background-image: url("/assets/pencil-notebook.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   color: #0f172a;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.72);
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
 }
 
 /* 玻璃拟态基础 */
@@ -63,6 +81,14 @@ body {
   border-radius: 11px;
   background: rgba(255, 255, 255, 0.9);
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.legacy-m1-head {
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
 }
 
 .legacy-m1-title {
@@ -116,11 +142,12 @@ body {
 .legacy-m1-acc2-summary {
   list-style: none;
   cursor: pointer;
-  padding: 12px;
+  padding: 10px 12px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .legacy-m1-acc2-summary::-webkit-details-marker {
@@ -134,19 +161,45 @@ body {
 }
 
 .legacy-m1-acc2-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 650;
   color: #111827;
 }
 
-.legacy-m1-acc2-subtitle,
-.legacy-m1-acc2-hint {
+.legacy-m1-acc2-subtitle {
   font-size: 12px;
   color: #6b7280;
 }
 
 .legacy-m1-acc2-body {
-  padding: 0 12px 12px 12px;
+  padding: 8px 12px 12px 12px;
+  background: rgba(248, 250, 252, 0.5);
+}
+
+.legacy-m1-acc2-chevron {
+  width: 18px;
+  height: 18px;
+  color: #64748b;
+  flex: none;
+  margin-top: 2px;
+  transition: transform 0.2s ease;
+}
+
+.legacy-m1-acc2-chevron svg {
+  width: 100%;
+  height: 100%;
+}
+
+.legacy-m1-acc2[open] .legacy-m1-acc2-chevron {
+  transform: rotate(180deg);
+}
+
+/* 展开区扁平化：移除阴影凸起感 */
+.legacy-m1-acc2-body .glass,
+.legacy-m1-acc2-body .glass-strong {
+  box-shadow: none !important;
+  border-color: rgba(226, 232, 240, 0.8);
+  background: rgba(248, 250, 252, 0.5);
 }
 
 @media (max-width: 980px) {
