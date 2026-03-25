@@ -433,7 +433,7 @@ function InsuranceTool({ data }) {
 
 const DRUG_OPTIONS = [
   { id: "g", name: "奥妥珠单抗", regimens: ["G-CHOP", "G-CVP", "G-B"] },
-  { id: "pola", name: "维泊妥珠单抗", regimens: ["标准方案（6周期）", "标准方案（8周期）"] },
+  { id: "pola", name: "维泊妥珠单抗", regimens: ["标准方案"] },
   { id: "glofit", name: "格菲妥珠单抗", regimens: ["标准阶梯方案"] },
   { id: "mosun", name: "莫妥珠单抗", regimens: ["标准阶梯方案"] }
 ];
@@ -465,7 +465,10 @@ function addMonths(base, months) {
  * @returns {string}
  */
 function formatDate(d) {
-  return d.toLocaleDateString("zh-CN");
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 /**
@@ -474,9 +477,9 @@ function formatDate(d) {
  */
 function renderDoseText(text) {
   const src = String(text || "");
-  const parts = src.split(/(\d+(?:\.\d+)?mg|单药治疗)/g);
+  const parts = src.split(/(\d+(?:\.\d+)?mg|单药治疗|单药)/g);
   return parts.map((p, i) =>
-    /(\d+(?:\.\d+)?mg|单药治疗)/.test(p) ? (
+    /(\d+(?:\.\d+)?mg|单药治疗|单药)/.test(p) ? (
       <span key={i} className="font-bold text-red-600">
         {p}
       </span>
@@ -498,28 +501,23 @@ function buildSchedule(drugId, regimen, startDate) {
   const rows = [];
 
   if (drugId === "mosun") {
-    rows.push({ index: 1, description: "第1次给药", date: formatDate(start), dose: "1mg" });
-    rows.push({ index: 2, description: "第2次给药（1周后）", date: formatDate(addDays(start, 7)), dose: "2mg" });
-    rows.push({ index: 3, description: "第3次给药（2周后）", date: formatDate(addDays(start, 14)), dose: "60mg" });
-    rows.push({ index: 4, description: "第4次给药（3周后）", date: formatDate(addDays(start, 21)), dose: "60mg" });
-    for (let i = 5; i <= 10; i += 1) {
+    rows.push({ index: 1, description: "起始日期", date: formatDate(start), dose: "1mg" });
+    rows.push({ index: 2, description: "1周后", date: formatDate(addDays(start, 7)), dose: "2mg" });
+    rows.push({ index: 3, description: "2周后", date: formatDate(addDays(start, 14)), dose: "60mg" });
+    rows.push({ index: 4, description: "3周后", date: formatDate(addDays(start, 21)), dose: "60mg" });
+    for (let i = 5; i <= 13; i += 1) {
       const date = addDays(start, 21 + (i - 4) * 21);
       rows.push({
         index: i,
-        description: `第${i}/15次给药`,
+        description: `间隔3周（${i}/15）`,
         date: formatDate(date),
         dose: "30mg",
-        note: i === 10 ? "若本次治疗后达到 CR（完全缓解），则停止莫妥珠单抗给药" : ""
-      });
-    }
-    for (let i = 11; i <= 19; i += 1) {
-      const date = addDays(start, 21 + (i - 4) * 21);
-      rows.push({
-        index: i,
-        description: `第${i}/15次给药`,
-        date: formatDate(date),
-        dose: "30mg",
-        note: "若第8周期后达到 PR/SD，继续治疗至第17个周期"
+        note:
+          i === 10
+            ? "若本次治疗后达到 CR（完全缓解），则停止莫妥珠单抗给药"
+            : i >= 11
+              ? "若第8周期后达到 PR/SD，继续治疗至第17个周期"
+              : ""
       });
     }
     return rows;
@@ -530,12 +528,13 @@ function buildSchedule(drugId, regimen, startDate) {
     rows.push({ index: 2, description: "第2次给药（1周后）", date: formatDate(addDays(start, 7)), dose: "2.5mg" });
     rows.push({ index: 3, description: "第3次给药（2周后）", date: formatDate(addDays(start, 14)), dose: "10mg" });
     rows.push({ index: 4, description: "第4次给药（3周后）", date: formatDate(addDays(start, 21)), dose: "30mg" });
-    for (let i = 5; i <= 12; i += 1) {
+    for (let i = 5; i <= 13; i += 1) {
       rows.push({
         index: i,
         description: `第${i}次给药（每21天）`,
         date: formatDate(addDays(start, 21 + (i - 4) * 21)),
-        dose: "30mg"
+        dose: "30mg",
+        note: i >= 11 ? "单药治疗" : ""
       });
     }
     return rows;
@@ -543,48 +542,73 @@ function buildSchedule(drugId, regimen, startDate) {
 
   if (drugId === "g") {
     const isGB = regimen === "G-B";
-    const induction = isGB ? [0, 7, 14, 28] : [0, 7, 14, 21];
+    const induction = [0, 7, 14, 21];
+    const inductionDesc = ["起始日期", "1周后", "2周后", "3周后"];
     induction.forEach((day, i) => {
       rows.push({
         index: i + 1,
-        description: `强化期第${i + 1}次`,
+        description: inductionDesc[i],
         date: formatDate(addDays(start, day)),
         dose: "1000mg"
       });
     });
 
-    const midCount = isGB ? 4 : 6;
-    const midStep = isGB ? 28 : 21;
-    for (let i = 1; i <= midCount; i += 1) {
-      rows.push({
-        index: rows.length + 1,
-        description: `巩固期第${i}次`,
-        date: formatDate(addDays(start, induction[induction.length - 1] + i * midStep)),
-        dose: "1000mg"
-      });
-    }
-
-    let base = addDays(start, induction[induction.length - 1] + midCount * midStep);
-    for (let i = 1; i <= 12; i += 1) {
-      base = addMonths(base, 2);
-      rows.push({
-        index: rows.length + 1,
-        description: `维持期第${i}次（每2个月）`,
-        date: formatDate(base),
-        dose: "1000mg"
-      });
+    if (isGB) {
+      for (let i = 1; i <= 4; i += 1) {
+        rows.push({
+          index: rows.length + 1,
+          description: `间隔4周（${i}/4）`,
+          date: formatDate(addDays(start, 21 + i * 28)),
+          dose: "1000mg"
+        });
+      }
+      let base = addDays(start, 21 + 4 * 28);
+      for (let i = 1; i <= 12; i += 1) {
+        base = addMonths(base, 2);
+        rows.push({
+          index: rows.length + 1,
+          description: `间隔2个月（${i}/12）`,
+          date: formatDate(base),
+          dose: "1000mg",
+          note: "奥妥珠单抗单药维持治疗"
+        });
+      }
+    } else {
+      for (let i = 1; i <= 6; i += 1) {
+        rows.push({
+          index: rows.length + 1,
+          description: `间隔3周（${i}/6）`,
+          date: formatDate(addDays(start, 21 + i * 21)),
+          dose: "1000mg",
+          note: i >= 5 ? "奥妥珠单抗单药" : ""
+        });
+      }
+      let base = addDays(start, 21 + 6 * 21);
+      for (let i = 1; i <= 12; i += 1) {
+        base = addMonths(base, 2);
+        rows.push({
+          index: rows.length + 1,
+          description: `间隔2个月（${i}/12）`,
+          date: formatDate(base),
+          dose: "1000mg",
+          note: "奥妥珠单抗单药维持治疗"
+        });
+      }
     }
     return rows;
   }
 
   if (drugId === "pola") {
-    const cycles = regimen.includes("8") ? 8 : 6;
-    for (let i = 1; i <= cycles; i += 1) {
+    for (let i = 1; i <= 6; i += 1) {
       rows.push({
         index: i,
-        description: `第${i}周期（每21天）`,
+        description: i === 1 ? "起始日期" : "间隔3周",
         date: formatDate(addDays(start, (i - 1) * 21)),
-        dose: "单药治疗 1.8mg/kg"
+        dose: "1.8mg/kg",
+        note:
+          i === 6
+            ? "与 R-CHP 联合给药；完成第6周期后，后续周期按医嘱评估是否继续。"
+            : ""
       });
     }
   }
@@ -610,8 +634,8 @@ function DrugCalculator() {
   const rows = useMemo(() => buildSchedule(drugId, regimen, startDate), [drugId, regimen, startDate]);
 
   return (
-    <div className="mt-5 grid gap-4 md:grid-cols-[190px,1fr]">
-      <aside className="rounded-2xl border border-slate-200 bg-slate-50 p-2">
+    <div className="mt-5 grid gap-4 md:grid-cols-[220px,1fr]">
+      <aside className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
         <div className="space-y-2">
           {DRUG_OPTIONS.map((d) => (
             <button
@@ -619,7 +643,7 @@ function DrugCalculator() {
               type="button"
               onClick={() => setDrugId(d.id)}
               className={[
-                "w-full rounded-lg px-3 py-2 text-left text-sm transition-colors",
+                "w-full rounded-2xl px-4 py-3 text-left text-base font-medium transition-colors",
                 drugId === d.id ? "bg-[#3B82F6] text-white" : "bg-white text-slate-700 hover:bg-blue-50"
               ].join(" ")}
             >
@@ -679,7 +703,7 @@ function DrugCalculator() {
           <table className="min-w-full text-left text-sm">
             <thead className="sticky top-0 bg-slate-50 text-slate-700">
               <tr>
-                <th className="px-3 py-2">序号</th>
+                <th className="px-3 py-2">#</th>
                 <th className="px-3 py-2">描述</th>
                 <th className="px-3 py-2">具体日期</th>
                 <th className="px-3 py-2">剂量与关键备注</th>
@@ -693,7 +717,9 @@ function DrugCalculator() {
                   <td className="px-3 py-2 text-slate-700">{r.date}</td>
                   <td className="px-3 py-2 text-slate-700">
                     {renderDoseText(r.dose)}
-                    {r.note ? <span className="ml-2 text-xs italic text-slate-500">{r.note}</span> : null}
+                    {r.note ? (
+                      <span className="ml-2 text-xs italic text-slate-500">{renderDoseText(r.note)}</span>
+                    ) : null}
                   </td>
                 </tr>
               ))}
@@ -946,6 +972,8 @@ export default function App() {
     </div>
   );
 }
+
+
 
 
 
