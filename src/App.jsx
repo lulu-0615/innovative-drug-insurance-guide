@@ -1074,11 +1074,11 @@ export default function App() {
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.55 }}
         >
-          <div className="shrink-0 basis-[45%] overflow-hidden">
+          <div className="shrink-0 basis-[40%] overflow-hidden">
             <img
               src="/assets/drugs_bg.jpg"
               alt="drugs background"
-              className="h-full w-full object-cover object-center md:object-[center_70%]"
+              className="h-full w-full object-cover object-center md:object-[center_73%]"
               onError={(e) => {
                 // 兜底：你没放 jpg 时仍能看到背景
                 e.currentTarget.src = "/assets/drugs_bg.svg";
