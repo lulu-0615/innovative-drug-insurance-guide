@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useInView } from "framer-motion";
 import { Copy, ExternalLink, HeartPulse, ShieldCheck, Sparkles } from "lucide-react";
@@ -1079,7 +1078,7 @@ export default function App() {
             <img
               src="/assets/drugs_bg.jpg"
               alt="drugs background"
-              className="h-full w-full object-cover object-center md:object-[center_42%]"
+              className="h-full w-full object-cover object-center md:object-[center_50%]"
               onError={(e) => {
                 // 兜底：你没放 jpg 时仍能看到背景
                 e.currentTarget.src = "/assets/drugs_bg.svg";
