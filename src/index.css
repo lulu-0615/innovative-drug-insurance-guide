@@ -86,7 +86,7 @@ body::before {
 }
 
 .legacy-m1-head {
-  min-height: 160px;
+  min-height: 190px;
   display: flex;
   flex-direction: column;
 }
@@ -109,7 +109,7 @@ body::before {
 
 .legacy-m1-desc-row {
   display: grid;
-  grid-template-columns: 56px minmax(0, 1fr);
+  grid-template-columns: 80px minmax(0, 1fr);
   gap: 10px;
 }
 
@@ -117,6 +117,21 @@ body::before {
   font-size: 12px;
   color: rgba(55, 65, 81, 0.55);
   font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 折叠态：固定顶部信息高度，避免三张卡片手风琴起点不齐 */
+.legacy-m1-head--collapsed {
+  max-height: 190px;
+  overflow: hidden;
+}
+
+.legacy-m1-head--collapsed .legacy-m1-desc-value {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .legacy-m1-desc-value {
@@ -213,5 +228,7 @@ body::before {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+
 
 
