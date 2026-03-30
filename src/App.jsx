@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useInView } from "framer-motion";
-import { Copy, ExternalLink, HeartPulse, ShieldCheck, Sparkles } from "lucide-react";
+import { ChevronRight, Copy, ExternalLink, HeartPulse, ShieldCheck, Sparkles } from "lucide-react";
 import insuranceConfig from "../insurance_config.json";
 
 /**
@@ -454,12 +454,12 @@ function Module2Calculator() {
       {/* Table */}
       <div className="mt-4 min-h-0 flex-1 overflow-hidden rounded-2xl border border-slate-200/70 bg-[rgba(255,255,255,0.65)] backdrop-blur-[10px]">
         <div className="max-h-[min(520px,56vh)] overflow-x-auto overflow-y-auto">
-          <table className="w-full min-w-[520px] border-collapse table-auto text-left text-sm">
+          <table className="w-full min-w-[520px] border-collapse table-fixed text-left text-sm">
             <thead className="sticky top-0 z-10 bg-[#3B82F6] text-white">
               <tr>
-                <th className="w-[60px] px-2 py-2.5 text-left text-xs font-bold whitespace-nowrap">#</th>
-                <th className="min-w-[240px] px-4 py-2.5 text-left text-xs font-bold whitespace-nowrap">描述</th>
-                <th className="w-[180px] px-4 py-2.5 text-left text-xs font-bold whitespace-nowrap">具体日期</th>
+                <th className="w-[45px] px-2 py-2.5 text-left text-xs font-bold whitespace-nowrap">#</th>
+                <th className="min-w-[200px] w-[28%] px-2 py-2.5 text-left text-xs font-bold whitespace-nowrap">描述</th>
+                <th className="w-[150px] px-2 py-2.5 text-left text-xs font-bold whitespace-nowrap">具体日期</th>
                 <th className="px-2 py-2.5 text-left text-xs font-bold">剂量与关键备注</th>
               </tr>
             </thead>
@@ -473,7 +473,7 @@ function Module2Calculator() {
                   ].join(" ")}
                 >
                   {/* 时间轴 */}
-                  <td className="w-[60px] px-2 py-2 align-top">
+                  <td className="w-[45px] px-2 py-2 align-top">
                     <div className="flex items-stretch gap-2">
                       <div className="mt-1 h-full w-[2px] border-r-2 border-dashed border-[#93c5fd]/90" />
                       <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#E8F4FF] text-xs font-bold text-[#007AFF]">
@@ -482,8 +482,8 @@ function Module2Calculator() {
                     </div>
                   </td>
 
-                  <td className="px-4 py-2 align-top whitespace-nowrap text-slate-800">{row.desc}</td>
-                  <td className="whitespace-nowrap px-4 py-2 align-top font-mono text-xs text-slate-800">
+                  <td className="px-2 py-2 align-top whitespace-nowrap text-slate-800">{row.desc}</td>
+                  <td className="whitespace-nowrap px-2 py-2 align-top font-mono text-xs text-slate-800">
                     {formatDate(row.date)}
                   </td>
                   <td className="min-w-0 px-2 py-2 align-top whitespace-normal">
@@ -809,24 +809,55 @@ function SegmentedTabs({ tabs }) {
  */
 function InsuranceTool({ data }) {
   const modules = data?.modules || [];
+  /** @type {Record<string, boolean>} */
+  const [descExpanded, setDescExpanded] = useState({});
+
+  function toggleDesc(moduleId) {
+    setDescExpanded((prev) => ({ ...prev, [moduleId]: !prev[moduleId] }));
+  }
+
   return (
     <div className="legacy-m1-cards mt-6">
       {modules.map((m) => (
         <div key={m.id} className="legacy-m1-card">
           <div className="legacy-m1-inner">
-            <div className="legacy-m1-head">
-              <div className="legacy-m1-title">{m.title}</div>
-              {m.description ? (
-                <div className="legacy-m1-desc">
-                  {parseL1Description(m.description).map((row, idx) => (
-                    <div key={idx} className="legacy-m1-desc-row">
-                      <div className="legacy-m1-desc-label">{row.label}</div>
-                      <div className="legacy-m1-desc-value">{row.value}</div>
+            {m.description ? (
+              /** 预解析，避免在 JSX 中多次调用 parseL1Description */
+              (() => {
+                const descRows = parseL1Description(m.description);
+                const expanded = Boolean(descExpanded[m.id]);
+                const showMore = descRows.length > 4;
+                const shown = expanded ? descRows : descRows.slice(0, 4);
+                return (
+                  <div className={["legacy-m1-head", !expanded && showMore ? "legacy-m1-head--collapsed" : ""].join(" ")}>
+                    <div className="legacy-m1-title">{m.title}</div>
+                    <div className="legacy-m1-desc">
+                      {shown.map((row, idx) => (
+                        <div key={idx} className="legacy-m1-desc-row">
+                          <div className="legacy-m1-desc-label">{row.label}</div>
+                          <div className="legacy-m1-desc-value">{row.value}</div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
+
+                    {showMore ? (
+                      <button
+                        type="button"
+                        className="mt-2 inline-flex items-center gap-2 rounded-lg text-xs font-semibold text-blue-900 transition-colors hover:bg-blue-50 active:bg-blue-50"
+                        onClick={() => toggleDesc(m.id)}
+                      >
+                        {expanded ? "收起详情" : "展开详情"}
+                        <ChevronRight className={["h-4 w-4 transition-transform", expanded ? "rotate-90" : "rotate-0"].join(" ")} aria-hidden />
+                      </button>
+                    ) : null}
+                  </div>
+                );
+              })()
+            ) : (
+              <div className="legacy-m1-head">
+                <div className="legacy-m1-title">{m.title}</div>
+              </div>
+            )}
 
             <div className="legacy-m1-accordion">
               {(m.accordion || []).map((acc) => (
