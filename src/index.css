@@ -110,7 +110,7 @@ body::before {
 
 .legacy-m1-desc-row {
   display: grid;
-  grid-template-columns: 80px minmax(0, 1fr) 28px;
+  grid-template-columns: 80px minmax(0, 1fr);
   gap: 10px;
   align-items: start;
 }
@@ -127,6 +127,32 @@ body::before {
 
 .legacy-m1-desc-rows--expanded {
   max-height: 420px;
+}
+
+.legacy-m1-desc-rows--active {
+  background: rgba(59, 130, 246, 0.03);
+  border-radius: 10px;
+}
+
+.legacy-m1-desc-expand {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.legacy-m1-desc-expand-btn {
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 9999px;
+  background: rgba(37, 99, 235, 0.06);
+  color: #2563eb;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.legacy-m1-desc-expand-btn:hover {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
 }
 
 .legacy-m1-desc-label {
@@ -264,8 +290,5 @@ body::before {
     grid-template-columns: minmax(0, 1fr);
   }
 }
-
-
-
 
 
