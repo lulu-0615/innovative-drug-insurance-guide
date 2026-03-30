@@ -86,6 +86,7 @@ body::before {
 }
 
 .legacy-m1-head {
+  flex: 1 1 auto;
   min-height: 190px;
   display: flex;
   flex-direction: column;
@@ -109,8 +110,23 @@ body::before {
 
 .legacy-m1-desc-row {
   display: grid;
-  grid-template-columns: 80px minmax(0, 1fr);
+  grid-template-columns: 80px minmax(0, 1fr) 28px;
   gap: 10px;
+  align-items: start;
+}
+
+/* 展开/收起（箭头控制）：平滑过渡高度 */
+.legacy-m1-desc-rows {
+  overflow: hidden;
+  transition: max-height 260ms ease;
+}
+
+.legacy-m1-desc-rows--collapsed {
+  max-height: 150px;
+}
+
+.legacy-m1-desc-rows--expanded {
+  max-height: 420px;
 }
 
 .legacy-m1-desc-label {
@@ -138,6 +154,26 @@ body::before {
   font-size: 12px;
   color: rgba(55, 65, 81, 0.55);
   line-height: 1.55;
+  min-width: 0;
+}
+
+.legacy-m1-desc-row--clickable {
+  cursor: pointer;
+}
+
+.legacy-m1-desc-arrow-btn {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 2px;
+  background: transparent;
+  border: 0;
+  color: #2563eb;
+  cursor: pointer;
+}
+
+.legacy-m1-desc-arrow-btn:hover {
+  color: #1d4ed8;
 }
 
 .legacy-m1-accordion {
@@ -228,6 +264,7 @@ body::before {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
 
 
 
