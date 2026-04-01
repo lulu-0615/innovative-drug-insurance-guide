@@ -318,13 +318,13 @@ function DoseAndNoteCell({ dose, note }) {
   const noteText = hasNote ? String(note) : "";
 
   return (
-    <div className="min-w-0 text-left">
+    <div className="min-w-0 text-left whitespace-nowrap">
       {hasDose ? <span className="font-bold text-[#3B82F6]">{dose}</span> : null}
       {hasNote ? (
         <span
           className={[
             hasDose ? "ml-1.5" : "",
-            "inline text-[11px] sm:text-[12px] font-normal italic leading-snug text-slate-400 break-words whitespace-normal"
+            "inline text-[11px] sm:text-[12px] font-normal italic leading-snug text-slate-400 whitespace-nowrap"
           ].join(" ")}
         >
           {noteText}
@@ -390,7 +390,7 @@ function Module2Calculator() {
       {/* Pill Toggle：2x2 */}
       <div>
         <div className="relative rounded-3xl bg-[rgba(59,130,246,0.06)] p-1">
-          <div ref={pillGridRef} className="relative grid grid-cols-2 gap-1">
+          <div ref={pillGridRef} className="relative grid min-w-0 grid-cols-2 gap-1">
             <div
               aria-hidden
               className="absolute rounded-2xl bg-[#3B82F6] shadow-md transition-transform duration-300 ease-out"
@@ -412,7 +412,7 @@ function Module2Calculator() {
                   type="button"
                   onClick={() => setDrug(key)}
                   className={[
-                    "relative z-10 flex items-center justify-center rounded-2xl px-2 py-2 text-[13px] font-semibold transition-colors duration-200 sm:px-3 sm:py-3 sm:text-sm",
+                    "relative z-10 flex min-w-0 items-center justify-center rounded-2xl px-2 py-2 text-[13px] font-semibold whitespace-nowrap transition-colors duration-200 sm:px-3 sm:py-3 sm:text-sm",
                     active ? "text-white" : "text-[#0B3D91] hover:text-[#007AFF]"
                   ].join(" ")}
                 >
@@ -453,13 +453,13 @@ function Module2Calculator() {
 
       {/* Table */}
       <div className="mt-4 min-h-0 min-w-0 flex-1 overflow-hidden rounded-2xl border border-slate-200/70 bg-[rgba(255,255,255,0.65)] backdrop-blur-[10px]">
-        <div className="max-h-[min(520px,56vh)] overflow-x-auto overflow-y-auto">
-          <table className="w-full min-w-[360px] sm:min-w-[520px] border-collapse table-fixed text-left text-xs sm:text-sm">
+        <div className="max-h-[min(520px,56vh)] overflow-y-auto overflow-x-hidden">
+          <table className="w-full border-collapse table-fixed text-left text-xs sm:text-sm" style={{ tableLayout: "fixed", width: "100%" }}>
             <thead className="sticky top-0 z-10 bg-[#3B82F6] text-white">
               <tr>
                 <th className="w-[45px] px-2 py-2.5 text-left text-xs font-bold whitespace-nowrap">#</th>
-                <th className="min-w-[180px] w-[28%] px-2 py-2.5 text-left text-xs font-bold whitespace-nowrap">描述</th>
-                <th className="w-[130px] px-2 py-2.5 text-left text-xs font-bold whitespace-nowrap">具体日期</th>
+                <th className="w-[70px] min-w-[70px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2.5 text-left text-xs font-bold">描述</th>
+                <th className="w-[100px] min-w-[100px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2.5 text-left text-xs font-bold">具体日期</th>
                 <th className="px-2 py-2.5 text-left text-xs font-bold">剂量与关键备注</th>
               </tr>
             </thead>
@@ -482,12 +482,14 @@ function Module2Calculator() {
                     </div>
                   </td>
 
-                  <td className="px-2 py-2 align-top whitespace-nowrap text-slate-800">{row.desc}</td>
-                  <td className="whitespace-nowrap px-2 py-2 align-top font-mono text-xs text-slate-800">
+                  <td className="w-[70px] min-w-[70px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2 align-top text-slate-800">{row.desc}</td>
+                  <td className="w-[100px] min-w-[100px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2 align-top font-mono text-xs text-slate-800">
                     {formatDate(row.date)}
                   </td>
-                  <td className="min-w-0 px-2 py-2 align-top whitespace-normal">
-                    <DoseAndNoteCell dose={row.dose} note={row.note} />
+                  <td className="min-w-0 w-full px-2 py-2 align-top">
+                    <div className="w-full overflow-x-auto whitespace-nowrap custom-scrollbar">
+                      <DoseAndNoteCell dose={row.dose} note={row.note} />
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -1151,9 +1153,9 @@ export default function App() {
             />
           </motion.div>
 
-          <div className="flex min-h-0 w-full flex-col bg-[rgba(255,255,255,0.85)] p-6 backdrop-blur-[10px] md:p-8">
+          <div className="flex min-h-0 min-w-0 w-full flex-col bg-[rgba(255,255,255,0.85)] p-6 backdrop-blur-[10px] md:p-8">
             <div className="shrink-0 text-xl font-bold text-[#007AFF] sm:text-2xl md:text-3xl">创新药使用指南</div>
-            <div className="mt-5 min-h-0 flex-1 overflow-hidden overflow-x-visible">
+            <div className="mt-5 min-h-0 min-w-0 flex-1 overflow-hidden">
               <Module2Calculator />
             </div>
           </div>
@@ -1170,7 +1172,6 @@ export default function App() {
     </div>
   );
 }
-
 
 
 
