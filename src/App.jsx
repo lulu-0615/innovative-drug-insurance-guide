@@ -186,7 +186,7 @@ function generateSchedule(drug, plan, startDate) {
   const rows = [];
 
   if (drug === "glofit") {
-    rows.push({ index: 1, desc: "预处理（第1天）", date: cloneDate(base), dose: "", note: GLOFIT_NOTE_ROW1 });
+    rows.push({ index: 1, desc: "预处理(第1天)", date: cloneDate(base), dose: "", note: GLOFIT_NOTE_ROW1 });
     rows.push({ index: 2, desc: "1周后", date: addWeeks(base, 1), dose: "2.5mg", note: "" });
     rows.push({ index: 3, desc: "2周后", date: addWeeks(base, 2), dose: "10mg", note: "" });
     rows.push({ index: 4, desc: "3周后", date: addWeeks(base, 3), dose: "30mg", note: GLOFIT_NOTE_ROW4_10 });
