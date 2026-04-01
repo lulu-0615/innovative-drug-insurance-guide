@@ -458,9 +458,9 @@ function Module2Calculator() {
             <thead className="sticky top-0 z-10 bg-[#3B82F6] text-white">
               <tr>
                 <th className="w-[45px] px-2 py-2.5 text-left text-xs font-bold whitespace-nowrap">#</th>
-                <th className="w-[70px] min-w-[70px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2.5 text-left text-xs font-bold">描述</th>
+                <th className="w-[94px] min-w-[94px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2.5 text-left text-xs font-bold">描述</th>
                 <th className="w-[100px] min-w-[100px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2.5 text-left text-xs font-bold">具体日期</th>
-                <th className="px-2 py-2.5 text-left text-xs font-bold">剂量与关键备注</th>
+                <th className="px-2 py-2.5 text-left text-xs font-bold">备注</th>
               </tr>
             </thead>
             <tbody>
@@ -482,7 +482,7 @@ function Module2Calculator() {
                     </div>
                   </td>
 
-                  <td className="w-[70px] min-w-[70px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2 align-top text-slate-800">{row.desc}</td>
+                  <td className="w-[94px] min-w-[94px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2 align-top text-slate-800">{row.desc}</td>
                   <td className="w-[100px] min-w-[100px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2 align-top font-mono text-xs text-slate-800">
                     {formatDate(row.date)}
                   </td>
@@ -1172,6 +1172,8 @@ export default function App() {
     </div>
   );
 }
+
+
 
 
 
