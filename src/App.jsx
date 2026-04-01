@@ -1191,7 +1191,7 @@ export default function App() {
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-10 text-sm text-slate-500 md:flex-row md:items-center md:justify-between md:px-8">
           <div>提示：本页面为科普工具，具体政策以当地医保与产品条款为准。</div>
-          <div>© {new Date().getFullYear()} Roche. All rights reserved.</div>
+          <div>© {new Date().getFullYear()}. All rights reserved.</div>
         </div>
       </footer>
     </div>
