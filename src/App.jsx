@@ -454,13 +454,13 @@ function Module2Calculator() {
       {/* Table */}
       <div className="mt-4 min-h-0 min-w-0 flex-1 overflow-hidden rounded-2xl border border-slate-200/70 bg-[rgba(255,255,255,0.65)] backdrop-blur-[10px]">
         <div className="relative isolate max-h-[min(520px,56vh)] overflow-x-auto overflow-y-auto custom-scrollbar">
-          <table className="w-[780px] min-w-full table-fixed text-left text-xs sm:text-sm" style={{ borderSpacing: 0 }}>
+          <table className="w-[788px] min-w-full table-fixed text-left text-xs sm:text-sm" style={{ borderSpacing: 0 }}>
             <thead className="sticky top-0 z-50 bg-[#3B82F6] text-white">
               <tr>
-                <th className="sticky left-0 z-[60] w-[32px] min-w-[32px] px-1 py-2.5 text-center text-xs font-bold whitespace-nowrap bg-[#3B82F6]"> </th>
-                <th className="sticky left-[32px] z-[60] w-[94px] min-w-[94px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2.5 text-center text-xs font-bold bg-[#3B82F6]">描述</th>
-                <th className="sticky left-[126px] z-[60] w-[100px] min-w-[100px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2.5 text-center text-xs font-bold bg-[#3B82F6] shadow-[2px_0_0_rgba(148,163,184,0.35)]">具体日期</th>
-                <th className="w-[554px] min-w-[554px] px-2 py-2.5 text-center text-xs font-bold">备注</th>
+                <th className="sticky left-0 z-[60] w-[32px] min-w-[32px] px-1 py-2.5 text-left text-xs font-bold whitespace-nowrap bg-[#3B82F6]"> </th>
+                <th className="sticky left-[32px] z-[60] w-[102px] min-w-[102px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2.5 text-left text-xs font-bold bg-[#3B82F6]">描述</th>
+                <th className="sticky left-[134px] z-[60] w-[100px] min-w-[100px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2.5 text-left text-xs font-bold bg-[#3B82F6] shadow-[2px_0_0_rgba(148,163,184,0.35)]">具体日期</th>
+                <th className="w-[554px] min-w-[554px] px-2 py-2.5 text-left text-xs font-bold">备注</th>
               </tr>
             </thead>
             <tbody>
@@ -468,14 +468,14 @@ function Module2Calculator() {
                 <tr
                   key={row.index}
                   className={[
-                    idx % 2 === 0 ? "bg-white" : "bg-[rgba(59,130,246,0.03)]"
+                    idx % 2 === 0 ? "bg-white" : "bg-[#F5F9FF]"
                   ].join(" ")}
                 >
                   {/* 时间轴 */}
                   <td
                     className={[
                       "sticky left-0 z-30 w-[32px] min-w-[32px] px-1 py-2 align-top",
-                      idx % 2 === 0 ? "bg-white" : "bg-[rgba(59,130,246,0.03)]"
+                      idx % 2 === 0 ? "bg-white" : "bg-[#F5F9FF]"
                     ].join(" ")}
                   >
                     <div className="flex items-stretch gap-1">
@@ -488,16 +488,16 @@ function Module2Calculator() {
 
                   <td
                     className={[
-                      "sticky left-[32px] z-30 w-[94px] min-w-[94px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2 align-top text-slate-800",
-                      idx % 2 === 0 ? "bg-white" : "bg-[rgba(59,130,246,0.03)]"
+                      "sticky left-[32px] z-30 w-[102px] min-w-[102px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2 align-top text-slate-800",
+                      idx % 2 === 0 ? "bg-white" : "bg-[#F5F9FF]"
                     ].join(" ")}
                   >
                     {row.desc}
                   </td>
                   <td
                     className={[
-                      "sticky left-[126px] z-30 w-[100px] min-w-[100px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2 align-top font-mono text-xs text-slate-800 shadow-[2px_0_0_rgba(148,163,184,0.22)]",
-                      idx % 2 === 0 ? "bg-white" : "bg-[rgba(59,130,246,0.03)]"
+                      "sticky left-[134px] z-30 w-[100px] min-w-[100px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2 align-top font-mono text-xs text-slate-800 shadow-[2px_0_0_rgba(148,163,184,0.22)]",
+                      idx % 2 === 0 ? "bg-white" : "bg-[#F5F9FF]"
                     ].join(" ")}
                   >
                     {formatDate(row.date)}
