@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useInView } from "framer-motion";
-import { CheckCircle2, ChevronDown, Copy, ExternalLink, HeartPulse, Pencil, ShieldCheck, Sparkles } from "lucide-react";
+import { CalendarDays, CheckCircle2, ChevronDown, Copy, ExternalLink, HeartPulse, ShieldCheck, Sparkles } from "lucide-react";
 import insuranceConfig from "../insurance_config.json";
 
 /**
@@ -339,18 +339,22 @@ function DoseAndNoteCell({ dose, note }) {
   const noteText = hasNote ? String(note) : "";
 
   return (
-    <div className="min-w-0 text-left whitespace-nowrap">
-      {hasDose ? <span className="font-bold text-[#3B82F6]">{dose}</span> : null}
-      {hasNote ? (
-        <span
-          className={[
-            hasDose ? "ml-1.5" : "",
-            "inline text-[11px] sm:text-[12px] font-normal italic leading-snug text-slate-400 whitespace-nowrap"
-          ].join(" ")}
-        >
-          {noteText}
-        </span>
-      ) : null}
+    <div className="mt-2 w-full rounded-xl bg-slate-50 p-3 text-sm leading-relaxed text-slate-600">
+      <div className="min-w-0 text-left">
+        {hasDose ? <span className="font-bold text-[#3B82F6]">{dose}</span> : null}
+        {hasNote ? (
+          <span
+            className={[
+              hasDose ? "ml-1.5" : "",
+              "inline text-[12px] font-normal italic leading-snug text-slate-500"
+            ].join(" ")}
+          >
+            {noteText}
+          </span>
+        ) : !hasDose ? (
+          <span className="text-[12px] text-slate-400">暂无备注</span>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -376,11 +380,19 @@ function Module2Calculator() {
   }, [schedule]);
   const [editableSchedule, setEditableSchedule] = useState(/** @type {Array<ScheduleRow>} */ ([]));
   const [editingRow, setEditingRow] = useState(/** @type {number|null} */ (null));
+  const [needConfirmShift, setNeedConfirmShift] = useState(true);
+  const [toastVisible, setToastVisible] = useState(false);
 
   useEffect(() => {
     setEditableSchedule(schedule.map((r) => ({ ...r, date: cloneDate(r.date) })));
     setEditingRow(null);
   }, [schedule]);
+
+  useEffect(() => {
+    if (!toastVisible) return;
+    const t = window.setTimeout(() => setToastVisible(false), 2200);
+    return () => window.clearTimeout(t);
+  }, [toastVisible]);
 
   const today = cloneDate(new Date());
   const nextUpcomingIndex = useMemo(() => {
@@ -403,6 +415,26 @@ function Module2Calculator() {
       return;
     }
     const anchorDate = parseDateInput(value);
+
+    const target = editableSchedule.find((r) => r.index === rowIndex);
+    if (!target) {
+      setEditingRow(null);
+      return;
+    }
+    const oldDateStr = formatDate(target.date);
+    const newDateStr = formatDate(anchorDate);
+    if (oldDateStr === newDateStr) {
+      setEditingRow(null);
+      return;
+    }
+    if (needConfirmShift) {
+      const ok = window.confirm("确认修改该日期吗？后续治疗日期将按既定间隔自动顺延。");
+      if (!ok) {
+        setEditingRow(null);
+        return;
+      }
+    }
+
     setEditableSchedule((prev) => {
       const rows = prev.map((r) => ({ ...r, date: cloneDate(r.date) }));
       const pos = rows.findIndex((r) => r.index === rowIndex);
@@ -414,6 +446,7 @@ function Module2Calculator() {
       }
       return rows;
     });
+    setToastVisible(true);
     setEditingRow(null);
   }
 
@@ -453,6 +486,20 @@ function Module2Calculator() {
 
   return (
     <div className="flex min-h-0 min-w-0 flex-col font-sans">
+      <AnimatePresence>
+        {toastVisible ? (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="fixed left-1/2 top-5 z-[120] -translate-x-1/2 rounded-full bg-slate-900/90 px-4 py-2 text-xs text-white shadow-lg backdrop-blur"
+          >
+            治疗计划已根据新的时间点自动顺延
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
       {/* Pill Toggle：2x2 */}
       <div>
         <div className="relative rounded-3xl bg-[rgba(59,130,246,0.06)] p-1">
@@ -517,14 +564,30 @@ function Module2Calculator() {
         </label>
       </div>
 
+      <label className="mt-3 inline-flex items-center gap-2 self-start rounded-lg bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600 ring-1 ring-slate-200">
+        <input
+          type="checkbox"
+          checked={needConfirmShift}
+          onChange={(e) => setNeedConfirmShift(e.target.checked)}
+          className="h-3.5 w-3.5 accent-[#3B82F6]"
+        />
+        修改日期前二次确认
+      </label>
+
       {/* Mobile Card List */}
       <div className="mt-4 space-y-2 sm:hidden">
-        {editableSchedule.map((row) => {
+        {editableSchedule.map((row, idx) => {
           const rowDate = cloneDate(row.date);
           const isDone = rowDate.getTime() < today.getTime();
           const isNext = !isDone && nextUpcomingIndex === row.index;
           return (
-            <div key={row.index} className="rounded-2xl bg-white/85 p-3 shadow-sm ring-1 ring-slate-200/70 backdrop-blur">
+            <div
+              key={row.index}
+              className={[
+                "w-full rounded-2xl px-4 py-4 shadow-sm ring-1 ring-slate-200/70 backdrop-blur",
+                idx % 2 === 0 ? "bg-white" : "bg-slate-50/50"
+              ].join(" ")}
+            >
               <div className="flex items-center justify-between gap-2">
                 <div className="inline-flex items-center gap-2">
                   {isDone ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : null}
@@ -542,22 +605,21 @@ function Module2Calculator() {
                     type="date"
                     autoFocus
                     defaultValue={formatDate(row.date)}
-                    onBlur={(e) => applyDateChange(row.index, e.target.value)}
                     onChange={(e) => applyDateChange(row.index, e.target.value)}
                     className="w-[122px] border-0 bg-transparent p-0 font-mono tabular-nums text-xs text-[#0B3D91] outline-none"
                   />
                 ) : (
                   <button
                     type="button"
-                    className="inline-flex items-center gap-1 rounded px-1 py-0.5 font-mono tabular-nums text-xs text-slate-700 hover:bg-[#E8F1FF]"
+                    className="group inline-flex items-center gap-1 rounded px-1 py-0.5 font-mono tabular-nums text-xs text-slate-700 hover:bg-[#E8F1FF]"
                     onClick={() => startEditDate(row.index)}
                   >
                     <span>{formatDateDisplay(row.date)}</span>
-                    <Pencil className="h-3 w-3 text-slate-400" />
+                    <CalendarDays className="h-3.5 w-3.5 text-slate-500 opacity-40 transition-opacity group-hover:opacity-90" />
                   </button>
                 )}
               </div>
-              <div className="mt-2 text-xs text-slate-700">
+              <div className="w-full">
                 <DoseAndNoteCell dose={row.dose} note={row.note} />
               </div>
             </div>
@@ -586,6 +648,7 @@ function Module2Calculator() {
                   <tr
                     key={row.index}
                     className={[
+                      "border-b border-slate-100",
                       idx % 2 === 0 ? "bg-white" : "bg-[#F5F9FF]"
                     ].join(" ")}
                   >
@@ -632,22 +695,21 @@ function Module2Calculator() {
                           type="date"
                           autoFocus
                           defaultValue={formatDate(row.date)}
-                          onBlur={(e) => applyDateChange(row.index, e.target.value)}
                           onChange={(e) => applyDateChange(row.index, e.target.value)}
                           className="w-[88px] border-0 bg-transparent p-0 font-mono tabular-nums text-xs text-[#0B3D91] outline-none"
                         />
                       ) : (
                         <button
                           type="button"
-                          className="inline-flex items-center gap-1 rounded px-0.5 py-0.5 hover:bg-[#E8F1FF]"
+                          className="group inline-flex items-center gap-1 rounded px-0.5 py-0.5 hover:bg-[#E8F1FF]"
                           onClick={() => startEditDate(row.index)}
                         >
                           <span>{formatDateDisplay(row.date)}</span>
-                          <Pencil className="h-3 w-3 text-slate-400" />
+                          <CalendarDays className="h-3.5 w-3.5 text-slate-500 opacity-40 transition-opacity group-hover:opacity-90" />
                         </button>
                       )}
                     </td>
-                    <td className="w-[554px] min-w-[554px] px-2 py-2 align-top whitespace-nowrap">
+                    <td className="w-[554px] min-w-[554px] px-2 py-2 align-top">
                       <DoseAndNoteCell dose={row.dose} note={row.note} />
                     </td>
                   </tr>
