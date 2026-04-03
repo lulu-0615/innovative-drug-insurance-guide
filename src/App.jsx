@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useInView } from "framer-motion";
-import { ChevronDown, Copy, ExternalLink, HeartPulse, Pencil, ShieldCheck, Sparkles } from "lucide-react";
+import { CheckCircle2, ChevronDown, Copy, ExternalLink, HeartPulse, Pencil, ShieldCheck, Sparkles } from "lucide-react";
 import insuranceConfig from "../insurance_config.json";
 
 /**
@@ -371,72 +371,50 @@ function Module2Calculator() {
     const start = parseDateInput(firstDate);
     return generateSchedule(drug, plan, start);
   }, [drug, plan, firstDate]);
-
+  const intervalDays = useMemo(() => {
+    return schedule.map((_, i) => (i === 0 ? 0 : dayDiff(schedule[i].date, schedule[i - 1].date)));
+  }, [schedule]);
   const [editableSchedule, setEditableSchedule] = useState(/** @type {Array<ScheduleRow>} */ ([]));
   const [editingRow, setEditingRow] = useState(/** @type {number|null} */ (null));
-  const [editingDate, setEditingDate] = useState("");
-  const [correctedRows, setCorrectedRows] = useState(/** @type {Record<number, boolean>} */ ({}));
-  const [shiftedRows, setShiftedRows] = useState(/** @type {Record<number, boolean>} */ ({}));
 
   useEffect(() => {
-    setEditableSchedule(
-      schedule.map((r) => ({
-        ...r,
-        date: cloneDate(r.date)
-      }))
-    );
+    setEditableSchedule(schedule.map((r) => ({ ...r, date: cloneDate(r.date) })));
     setEditingRow(null);
-    setEditingDate("");
-    setCorrectedRows({});
-    setShiftedRows({});
   }, [schedule]);
 
-  /** @param {ScheduleRow} row */
-  function beginEditDate(row) {
-    setEditingRow(row.index);
-    setEditingDate(formatDate(row.date));
+  const today = cloneDate(new Date());
+  const nextUpcomingIndex = useMemo(() => {
+    const hit = editableSchedule.find((r) => cloneDate(r.date).getTime() >= today.getTime());
+    return hit ? hit.index : null;
+  }, [editableSchedule, today]);
+
+  /** @param {number} rowIndex */
+  function startEditDate(rowIndex) {
+    setEditingRow(rowIndex);
   }
 
-  function cancelEditDate() {
-    setEditingRow(null);
-    setEditingDate("");
-  }
-
-  function commitEditDate() {
-    if (editingRow == null || !editingDate) return;
-    const nextDate = parseDateInput(editingDate);
-
+  /**
+   * @param {number} rowIndex
+   * @param {string} value
+   */
+  function applyDateChange(rowIndex, value) {
+    if (!value) {
+      setEditingRow(null);
+      return;
+    }
+    const anchorDate = parseDateInput(value);
     setEditableSchedule((prev) => {
       const rows = prev.map((r) => ({ ...r, date: cloneDate(r.date) }));
-      const anchorPos = rows.findIndex((r) => r.index === editingRow);
-      if (anchorPos < 0) return prev;
+      const pos = rows.findIndex((r) => r.index === rowIndex);
+      if (pos < 0) return prev;
 
-      const syncAll = window.confirm("检测到日期变更，是否同步顺延后续所有用药计划？");
-      const nextCorrected = { [editingRow]: true };
-      const nextShifted = /** @type {Record<number, boolean>} */ ({});
-
-      rows[anchorPos].date = cloneDate(nextDate);
-
-      if (syncAll) {
-        /** @type {Array<number>} */
-        const intervals = rows.map((r, i) => (i === 0 ? 0 : dayDiff(rows[i].date, rows[i - 1].date)));
-        for (let i = anchorPos + 1; i < rows.length; i++) {
-          rows[i].date = addDays(rows[i - 1].date, intervals[i]);
-          nextShifted[rows[i].index] = true;
-        }
+      rows[pos].date = cloneDate(anchorDate);
+      for (let i = pos + 1; i < rows.length; i++) {
+        rows[i].date = addDays(rows[i - 1].date, intervalDays[i]);
       }
-
-      setCorrectedRows((prevMap) => ({ ...prevMap, ...nextCorrected }));
-      setShiftedRows(nextShifted);
-      if (Object.keys(nextShifted).length) {
-        window.setTimeout(() => setShiftedRows({}), 1400);
-      }
-
       return rows;
     });
-
     setEditingRow(null);
-    setEditingDate("");
   }
 
   /** @type {Array<DrugKey>} */
@@ -539,99 +517,142 @@ function Module2Calculator() {
         </label>
       </div>
 
+      {/* Mobile Card List */}
+      <div className="mt-4 space-y-2 sm:hidden">
+        {editableSchedule.map((row) => {
+          const rowDate = cloneDate(row.date);
+          const isDone = rowDate.getTime() < today.getTime();
+          const isNext = !isDone && nextUpcomingIndex === row.index;
+          return (
+            <div key={row.index} className="rounded-2xl bg-white/85 p-3 shadow-sm ring-1 ring-slate-200/70 backdrop-blur">
+              <div className="flex items-center justify-between gap-2">
+                <div className="inline-flex items-center gap-2">
+                  {isDone ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : null}
+                  {isNext ? (
+                    <span className="relative inline-flex h-2.5 w-2.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-70" />
+                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-sky-500" />
+                    </span>
+                  ) : null}
+                  <span className={isDone ? "text-slate-400" : "text-slate-800"}>{row.desc}</span>
+                  {isNext ? <span className="rounded bg-sky-100 px-1.5 py-0.5 text-[10px] text-sky-700">建议用药日</span> : null}
+                </div>
+                {editingRow === row.index ? (
+                  <input
+                    type="date"
+                    autoFocus
+                    defaultValue={formatDate(row.date)}
+                    onBlur={(e) => applyDateChange(row.index, e.target.value)}
+                    onChange={(e) => applyDateChange(row.index, e.target.value)}
+                    className="w-[122px] border-0 bg-transparent p-0 font-mono tabular-nums text-xs text-[#0B3D91] outline-none"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1 rounded px-1 py-0.5 font-mono tabular-nums text-xs text-slate-700 hover:bg-[#E8F1FF]"
+                    onClick={() => startEditDate(row.index)}
+                  >
+                    <span>{formatDateDisplay(row.date)}</span>
+                    <Pencil className="h-3 w-3 text-slate-400" />
+                  </button>
+                )}
+              </div>
+              <div className="mt-2 text-xs text-slate-700">
+                <DoseAndNoteCell dose={row.dose} note={row.note} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       {/* Table */}
-      <div className="mt-4 min-h-0 min-w-0 flex-1 overflow-hidden rounded-2xl bg-[rgba(255,255,255,0.65)] backdrop-blur-[10px]">
+      <div className="mt-4 hidden min-h-0 min-w-0 flex-1 overflow-hidden rounded-2xl bg-[rgba(255,255,255,0.65)] backdrop-blur-[10px] sm:block">
         <div className="relative isolate max-h-[min(520px,56vh)] overflow-x-auto overflow-y-auto custom-scrollbar">
-          <table className="w-[780px] min-w-full border-collapse table-fixed text-left text-xs sm:text-sm">
-            <thead className="sticky top-0 z-[80] bg-[#3B82F6] text-white">
+          <table className="w-[788px] min-w-full border-collapse table-fixed text-left text-xs sm:text-sm">
+            <thead className="sticky top-0 z-[80] relative bg-[#3B82F6]/90 text-white backdrop-blur-md before:pointer-events-none before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/75 before:to-transparent">
               <tr>
                 <th className="sticky left-0 z-[60] w-[32px] min-w-[32px] px-1 py-2.5 text-left text-xs font-bold whitespace-nowrap bg-[#3B82F6]"> </th>
                 <th className="sticky left-[32px] z-[60] w-[102px] min-w-[102px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2.5 text-left text-xs font-bold bg-[#3B82F6]">描述</th>
-                <th className="sticky left-[134px] z-[60] w-[92px] min-w-[92px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2.5 text-left text-xs font-bold bg-[#3B82F6]">具体日期</th>
+                <th className="sticky left-[134px] z-[60] w-[100px] min-w-[100px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2.5 text-left text-xs font-bold bg-[#3B82F6]">具体日期</th>
                 <th className="w-[554px] min-w-[554px] px-2 py-2.5 text-left text-xs font-bold">备注</th>
               </tr>
             </thead>
             <tbody className="relative z-0">
-              {editableSchedule.map((row, idx) => (
-                <tr
-                  key={row.index}
-                  className={[
-                    idx % 2 === 0 ? "bg-white" : "bg-[#F5F9FF]"
-                  ].join(" ")}
-                >
-                  {/* 时间轴 */}
-                  <td
+              {editableSchedule.map((row, idx) => {
+                const rowDate = cloneDate(row.date);
+                const isDone = rowDate.getTime() < today.getTime();
+                const isNext = !isDone && nextUpcomingIndex === row.index;
+                return (
+                  <tr
+                    key={row.index}
                     className={[
-                      "sticky left-0 z-30 w-[32px] min-w-[32px] px-1 py-2 align-top",
                       idx % 2 === 0 ? "bg-white" : "bg-[#F5F9FF]"
                     ].join(" ")}
                   >
-                    <div className="flex items-stretch gap-1">
-                      <div className="mt-1 h-full w-[2px] bg-[#93c5fd]/90" />
-                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#E8F4FF] text-[10px] font-bold text-[#007AFF]">
-                        {row.index}
+                    <td
+                      className={[
+                        "sticky left-0 z-30 w-[32px] min-w-[32px] px-1 py-2 align-top",
+                        idx % 2 === 0 ? "bg-white" : "bg-[#F5F9FF]"
+                      ].join(" ")}
+                    >
+                      <div className="flex items-stretch gap-1">
+                        <div className="mt-1 h-full w-[2px] bg-[#93c5fd]/90" />
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#E8F4FF] text-[10px] font-bold text-[#007AFF]">
+                          {row.index}
+                        </div>
                       </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  <td
-                    className={[
-                      "sticky left-[32px] z-30 w-[102px] min-w-[102px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2 align-top text-slate-800",
-                      idx % 2 === 0 ? "bg-white" : "bg-[#F5F9FF]"
-                    ].join(" ")}
-                  >
-                    {row.desc}
-                  </td>
-                  <td
-                    className={[
-                      "sticky left-[134px] z-30 w-[92px] min-w-[92px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2 align-top font-mono tabular-nums text-xs",
-                      correctedRows[row.index] ? "text-[#0B3D91]" : "text-slate-800",
-                      shiftedRows[row.index] ? "animate-pulse" : "",
-                      idx % 2 === 0 ? "bg-white" : "bg-[#F5F9FF]"
-                    ].join(" ")}
-                  >
-                    {editingRow === row.index ? (
-                      <div className="flex items-center gap-1">
+                    <td
+                      className={[
+                        "sticky left-[32px] z-30 w-[102px] min-w-[102px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2 align-top",
+                        idx % 2 === 0 ? "bg-white" : "bg-[#F5F9FF]"
+                      ].join(" ")}
+                    >
+                      <div className="inline-flex items-center gap-1.5">
+                        {isDone ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> : null}
+                        {isNext ? (
+                          <span className="relative inline-flex h-2 w-2">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-70" />
+                            <span className="relative inline-flex h-2 w-2 rounded-full bg-sky-500" />
+                          </span>
+                        ) : null}
+                        <span className={isDone ? "text-slate-400" : "text-slate-800"}>{row.desc}</span>
+                        {isNext ? <span className="rounded bg-sky-100 px-1 py-[1px] text-[10px] text-sky-700">建议用药日</span> : null}
+                      </div>
+                    </td>
+                    <td
+                      className={[
+                        "sticky left-[134px] z-30 w-[100px] min-w-[100px] shrink-0 flex-shrink-0 whitespace-nowrap px-2 py-2 align-top font-mono tabular-nums text-xs text-slate-800",
+                        idx % 2 === 0 ? "bg-white" : "bg-[#F5F9FF]"
+                      ].join(" ")}
+                    >
+                      {editingRow === row.index ? (
                         <input
                           type="date"
-                          value={editingDate}
-                          onChange={(e) => setEditingDate(e.target.value)}
-                          className="w-[96px] rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-[#3B82F6]"
+                          autoFocus
+                          defaultValue={formatDate(row.date)}
+                          onBlur={(e) => applyDateChange(row.index, e.target.value)}
+                          onChange={(e) => applyDateChange(row.index, e.target.value)}
+                          className="w-[88px] border-0 bg-transparent p-0 font-mono tabular-nums text-xs text-[#0B3D91] outline-none"
                         />
+                      ) : (
                         <button
                           type="button"
-                          className="rounded bg-[#0B3D91] px-1.5 py-0.5 text-[10px] text-white"
-                          onClick={commitEditDate}
+                          className="inline-flex items-center gap-1 rounded px-0.5 py-0.5 hover:bg-[#E8F1FF]"
+                          onClick={() => startEditDate(row.index)}
                         >
-                          确认
+                          <span>{formatDateDisplay(row.date)}</span>
+                          <Pencil className="h-3 w-3 text-slate-400" />
                         </button>
-                        <button
-                          type="button"
-                          className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] text-slate-700"
-                          onClick={cancelEditDate}
-                        >
-                          取消
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-1 rounded px-1 py-0.5 transition hover:bg-[#E8F1FF]"
-                        onClick={() => beginEditDate(row)}
-                      >
-                        <span>{formatDateDisplay(row.date)}</span>
-                        <Pencil className="h-3 w-3 text-slate-400" />
-                        {correctedRows[row.index] ? (
-                          <span className="rounded bg-[#0B3D91]/10 px-1.5 py-[1px] text-[10px] font-semibold text-[#0B3D91]">已修正</span>
-                        ) : null}
-                      </button>
-                    )}
-                  </td>
-                  <td className="w-[554px] min-w-[554px] px-2 py-2 align-top whitespace-nowrap">
-                    <DoseAndNoteCell dose={row.dose} note={row.note} />
-                  </td>
-                </tr>
-              ))}
+                      )}
+                    </td>
+                    <td className="w-[554px] min-w-[554px] px-2 py-2 align-top whitespace-nowrap">
+                      <DoseAndNoteCell dose={row.dose} note={row.note} />
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -1305,7 +1326,7 @@ export default function App() {
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-10 text-sm text-slate-500 md:flex-row md:items-center md:justify-between md:px-8">
           <div>提示：本页面为科普工具，具体政策以当地医保与产品条款为准。</div>
-          <div>© {new Date().getFullYear()}. All rights reserved.</div>
+          <div>© {new Date().getFullYear()} Roche. All rights reserved.</div>
         </div>
       </footer>
     </div>
